@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+var path = require('path');
+var repl = require("repl")
+var fs   = require('fs');
+var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
+
+var cljs = require(lib + '/clojurescript');
+var prStr = cljs.eval("pr-str");
+
+String.prototype.attribute = function(attr, match) {
+  return this.replace(match, "\x1b[" + attr + "m$1\x1b[0m");
+}
+
+repl.start({
+  writer: function(x) {
+    return prStr(x)
+            .attribute("33", /(\d+)/g)
+            .attribute("37;1", /(:\w+)/g)
+            .attribute("32", /(\"[^\"]+")/g)
+            .attribute("36", /(#\w+)/g);
+  },
+  
+  eval: function(cmd, context, filename, callback) {
+    if(cmd == ".scope") {
+      callback(null, []);
+    } else {
+      callback(null, cljs.eval(cmd));
+    }
+  }
+});

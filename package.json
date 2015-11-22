@@ -1,0 +1,32 @@
+{
+  "name": "clojurescript",
+  "description": "The ClojureScript Programming Language, packaged for Node.js",
+  "keywords": [
+    "language",
+    "clojurescript",
+    "clojure",
+    "lisp",
+    "functional",
+    "immutable",
+    "compiler"
+  ],
+  "author": "Ramsey Nasser",
+  "version": "0.0.1",
+  "license": "Eclipse",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "main": "./lib/clojurescript",
+  "bin": {
+    "cljs": "./bin/cljs"
+  },
+  "homepage": "http://nasser.github.io/clojurescript-npm",
+  "bugs": "https://github.com/nasser/clojurescript-npm/issues",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nasser/clojurescript-npm.git"
+  }
+}
