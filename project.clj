@@ -1,6 +1,6 @@
 (defproject clojurescript-npm "0.2.0-SNAPSHOT"
   :description "The ClojureScript Programming Language, packaged for Node.js"
-  :url "http://nasser.github.io/clojurescript-npm"
+  :url "https://github.com/nasser/clojurescript-npm"
   :license {:name "Eclipse Public License"
             :url "http://nasser.github.io/clojurescript-npm/blob/master/LICENSE"}
   :dependencies [[org.clojure/clojure "1.7.0"]
