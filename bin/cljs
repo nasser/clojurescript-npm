@@ -5,7 +5,6 @@ var fs   = require('fs');
 var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
 
 var cljs = require(lib + '/clojurescript');
-var prStr = cljs.eval("pr-str");
 
 String.prototype.attribute = function(attr, match) {
   return this.replace(match, "\x1b[" + attr + "m$1\x1b[0m");
@@ -13,7 +12,7 @@ String.prototype.attribute = function(attr, match) {
 
 repl.start({
   writer: function(x) {
-    return prStr(x)
+    return cljs.context.cljs.core.pr_str(x)
             .attribute("33", /(\d+)/g)
             .attribute("37;1", /(:\w+)/g)
             .attribute("32", /(\"[^\"]+")/g)
