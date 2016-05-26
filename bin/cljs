@@ -13,11 +13,6 @@ const rl = readline.createInterface({
 
 var input = "";
 
-String.prototype.attribute = function(attr, match) {
-  return this.replace(match, "\x1b[" + attr + "m$1\x1b[0m");
-}
-
-
 function prompt(p) {
   var promptString = p || cljs.eval("(str *ns*)") + "=> ";
   rl.setPrompt(promptString);
@@ -29,14 +24,9 @@ rl.on('line', (cmd) => {
   if(cmd.length > 0 && parenthesesAreBalanced(input)) {
     var x = cljs.eval(input);
     input = "";
-    
-    var result = cljs.context.cljs.core.pr_str(x)
-                    .attribute("33", /(\b(\d+\.?\d*)\b)/g)
-                    .attribute("37;1", /(:\w+)/g)
-                    .attribute("32", /(\"[^\"]+")/g)
-                    .attribute("36", /(#\w+)/g);
-    console.log(result);
+    cljs.context.cljs.pprint.pprint(x);
     prompt();
+    
   } else {
     prompt("... ");
   }
