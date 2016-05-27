@@ -15,6 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def fs (nodejs/require "fs"))
+(def AdmZip (nodejs/require "adm-zip"))
 
 (defn node-read-file
   "Accepts a filename to read and a callback. Upon success, invokes
@@ -159,22 +160,36 @@
       (.error js/console
               (string/join "\n" (remove nil? message))))))
 
+(defn jars-in-dir [base]
+  (->> (fs.readdirSync base)
+       (filter #(re-find #"\.jar" %))
+       (map #(str base "/" %))))
+
+(def ^:dynamic *load-paths*
+  (vec (concat ["node_modules"]
+               (jars-in-dir "node_modules"))))
+
 (defn ^:export eval [in-str]
-  (let [src-paths ["." "./node_modules"]]
-    (replumb/read-eval-call
-      (merge
-        {:no-pr-str-on-value true
-         :init-fn! replumbjs/init-fn!}
-        (replumb/options
-          :node
-          (make-load-fn
-            src-paths
-            (fn [filename source-cb]
-              (source-cb
-                (if (.existsSync fs filename)
-                  (node-read-file-sync filename)))))))
-      handle-result
-      in-str)))
+  (replumb/read-eval-call
+    (merge
+      {:no-pr-str-on-value true
+       :init-fn! replumbjs/init-fn!}
+      (replumb/options
+        :node
+        (make-load-fn
+          *load-paths*
+          (fn [filename source-cb]
+            (source-cb
+              (cond 
+                (re-find #"\.jar/" filename)
+                (let [[jar-path path] (string/split filename ".jar/")
+                      zip (AdmZip. (str jar-path ".jar"))]
+                  (if (.getEntry zip path)
+                    (.readAsText zip path)))
+                (.existsSync fs filename)
+                (node-read-file-sync filename)))))))
+    handle-result
+    in-str))
 
 (defn ^:export compile [in-str]
   (cljsjs/compile-str
