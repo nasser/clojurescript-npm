@@ -15,4 +15,5 @@
           :main          clojurescript.core
           :output-to     "lib/bootstrap.js"
           :output-dir    "out"
+          :target        :nodejs
           :optimizations :simple}}]})
