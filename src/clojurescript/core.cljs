@@ -118,7 +118,8 @@
 (defn load?
   [name macros]
   (let [do-not-load (or (@loaded name)
-                      (skip-load? name macros))]
+                      (skip-load? name macros)
+                      (js/goog.getObjectByName (str name)))]
     (swap! loaded conj name)
     (not do-not-load)))
 
