@@ -24,9 +24,13 @@ function prompt(p) {
 rl.on('line', (cmd) => {
   input += cmd + "\n";
   if(cmd.length > 0 && parenthesesAreBalanced(input)) {
-    var x = cljs.eval(input);
-    input = "";
-    cljs.context.cljs.pprint.pprint(x);
+    try {
+      var x = cljs.eval(input);
+      input = "";
+      cljs.context.cljs.pprint.pprint(x);
+    } catch(e) {
+      console.error(e);
+    }
     prompt();
     
   } else {
