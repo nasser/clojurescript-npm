@@ -3,8 +3,8 @@
   :url "https://github.com/nasser/clojurescript-npm"
   :license {:name "Eclipse Public License"
             :url "http://nasser.github.io/clojurescript-npm/blob/master/LICENSE"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.170"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojurescript "1.8.51"]
                  [replumb/replumb "0.2.1"]]
   :clean-targets [:target-path "out"]
   :plugins [[lein-cljsbuild "1.1.1"]]
