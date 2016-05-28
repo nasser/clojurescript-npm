@@ -160,15 +160,48 @@
       (.error js/console
               (string/join "\n" (remove nil? message))))))
 
-(defn jars-in-dir [base]
-  (if (fs.exists base)
+(defn node-module-paths
+  "Implementation of the algorithm that
+  Node uses to resolve modules"
+  [base]
+  (->> (string/split base "/")
+       reverse
+       (iterate rest)
+       (take-while (comp not empty?))
+       (map reverse)
+       (map #(string/join "/" %))
+       (map #(str % "/node_modules"))
+       vec
+       clj->js))
+
+(defn jars-in-dir
+  "Sequence of all .jar files in base"
+  [base]
+  (if (fs.existsSync base)
     (->> (fs.readdirSync base)
          (filter #(re-find #"\.jar" %))
          (map #(str base "/" %)))))
 
-(def ^:dynamic *load-paths*
-  (vec (concat ["node_modules"]
-               (jars-in-dir "node_modules"))))
+(defn node-module-paths-with-jars
+  "Node load path interleaved with .jar files in node_module
+  directories"
+  [base]
+  (as-> base %
+        (node-module-paths %)
+        (interleave % (map jars-in-dir %))
+        (remove nil? %)
+        (flatten %)))
+
+(def ^:dynamic *load-paths*)
+
+(defn establish-load-path
+  ([] (establish-load-path (js/process.cwd)))
+  ([base]
+   (aset js/module "paths" (node-module-paths base))
+   (set! *load-paths* (vec (node-module-paths-with-jars base)))))
+
+;; TODO not sure if process.cwd is a good default
+(establish-load-path)
 
 (defn ^:export eval [in-str]
   (replumb/read-eval-call
