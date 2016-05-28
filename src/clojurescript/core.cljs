@@ -161,9 +161,10 @@
               (string/join "\n" (remove nil? message))))))
 
 (defn jars-in-dir [base]
-  (->> (fs.readdirSync base)
-       (filter #(re-find #"\.jar" %))
-       (map #(str base "/" %))))
+  (if (fs.exists base)
+    (->> (fs.readdirSync base)
+         (filter #(re-find #"\.jar" %))
+         (map #(str base "/" %)))))
 
 (def ^:dynamic *load-paths*
   (vec (concat ["node_modules"]
