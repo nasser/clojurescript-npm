@@ -136,9 +136,11 @@ helpers.wrap(-90, 0, 100)
 ```
 
 
-### Command Line REPL
+### Command Line
 
 Installing with `-g` will create put a `cljs` executable on your path.
+
+Calling without arguments starts a REPL.
 
 ```clj
 $ cljs
@@ -162,6 +164,27 @@ nil
 10
 > (wrap -90 0 10)
 0
+```
+
+Passing a file as an argument will execute that file.
+```clj
+$ cat foo.cljs
+(->> (range 20)
+     (map inc)
+     (filter even?)
+     (map #(println (str "Hello " % " World")))
+     dorun)
+$ cljs foo.cljs
+Hello 2 World
+Hello 4 World
+Hello 6 World
+Hello 8 World
+Hello 10 World
+Hello 12 World
+Hello 14 World
+Hello 16 World
+Hello 18 World
+Hello 20 World
 ```
 
 API
