@@ -198,7 +198,7 @@
   ([] (establish-load-path (js/process.cwd)))
   ([base]
    (aset js/module "paths" (node-module-paths base))
-   (set! *load-paths* (vec (node-module-paths-with-jars base)))))
+   (set! *load-paths* (into [base] (node-module-paths-with-jars base)))))
 
 ;; TODO not sure if process.cwd is a good default
 (establish-load-path)
