@@ -1,5 +1,6 @@
 (ns clojurescript.core
   (:require [clojure.string :as string]
+            [cljs.tools.reader.reader-types :as rt]
             [cljs.nodejs :as nodejs]
             [cljs.js :as cljsjs]
             [replumb.repl :as replumbrepl]
@@ -203,25 +204,39 @@
 ;; TODO not sure if process.cwd is a good default
 (establish-load-path)
 
+(defn single-form [s]
+  (let [rdr (rt/string-push-back-reader s)
+        _ (replumbrepl/read {} rdr)]
+    (try
+      (replumbrepl/read {} rdr)
+      false
+      (catch js/Error e 
+        true))))
+
+(defn compile-options [in-str]
+  (merge
+    {:no-pr-str-on-value true
+     :def-emits-var true
+     :context (if (single-form in-str) :expr :statement)
+     :init-fn! replumbjs/init-fn!}
+    (replumb/options
+      :node
+      (make-load-fn
+        *load-paths*
+        (fn [filename source-cb]
+          (source-cb
+            (cond 
+              (re-find #"\.jar/" filename)
+              (let [[jar-path path] (string/split filename ".jar/")
+                    zip (AdmZip. (str jar-path ".jar"))]
+                (if (.getEntry zip path)
+                  (.readAsText zip path)))
+              (.existsSync fs filename)
+              (node-read-file-sync filename))))))))
+
 (defn ^:export eval [in-str]
   (replumb/read-eval-call
-    (merge
-      {:no-pr-str-on-value true
-       :init-fn! replumbjs/init-fn!}
-      (replumb/options
-        :node
-        (make-load-fn
-          *load-paths*
-          (fn [filename source-cb]
-            (source-cb
-              (cond 
-                (re-find #"\.jar/" filename)
-                (let [[jar-path path] (string/split filename ".jar/")
-                      zip (AdmZip. (str jar-path ".jar"))]
-                  (if (.getEntry zip path)
-                    (.readAsText zip path)))
-                (.existsSync fs filename)
-                (node-read-file-sync filename)))))))
+    (compile-options in-str)
     handle-result
     in-str))
 
@@ -229,7 +244,7 @@
   (cljsjs/compile-str
     replumbrepl/st
     in-str ""
-    (replumbrepl/base-eval-opts!)
+    (compile-options in-str)
     handle-result))
 
 (set! *main-cli-fn* (fn []))
