@@ -7,10 +7,8 @@ var readline = require('readline');
 var args = process.argv.slice(2);
 if(args.length > 0) {
   var cljs = require(lib + '/clojurescript');
-  for (var i = 0; i < args.length; i++) {
-    var code = fs.readFileSync(args[i], "utf8");
-    cljs.eval(code);
-  };
+  var code = fs.readFileSync(args[0], "utf8");
+  cljs.eval(code);
   
 } else {
   process.stdout.write("cljs.user=> ");
