@@ -16,6 +16,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def fs (nodejs/require "fs"))
+(def process (nodejs/require "process"))
 (def AdmZip (nodejs/require "adm-zip"))
 
 (defn node-read-file
@@ -155,7 +156,7 @@
           stack (.-stack error)
           message [(if cause cause)
                    (if description description)
-                   (if (and fileName lineNumber columnNumber)
+                   (when (and fileName lineNumber columnNumber)
                      (str fileName ":" lineNumber "," columnNumber))
                    (if stack stack)]]
       (.error js/console
@@ -178,8 +179,8 @@
 (defn jars-in-dir
   "Sequence of all .jar files in base"
   [base]
-  (if (fs.existsSync base)
-    (->> (fs.readdirSync base)
+  (when ^boolean (.existsSync fs base)
+    (->> (.readdirSync fs base)
          (filter #(re-find #"\.jar" %))
          (map #(str base "/" %)))))
 
@@ -196,7 +197,7 @@
 (def ^:dynamic *load-paths*)
 
 (defn establish-load-path
-  ([] (establish-load-path (js/process.cwd)))
+  ([] (establish-load-path (.cwd process)))
   ([base]
    (aset js/module "paths" (node-module-paths base))
    (set! *load-paths* (into [base] (node-module-paths-with-jars base)))))
@@ -210,7 +211,7 @@
     (try
       (replumbrepl/read {} rdr)
       false
-      (catch js/Error e 
+      (catch js/Error e
         true))))
 
 (defn compile-options [in-str]
@@ -225,11 +226,11 @@
         *load-paths*
         (fn [filename source-cb]
           (source-cb
-            (cond 
+            (cond
               (re-find #"\.jar/" filename)
               (let [[jar-path path] (string/split filename ".jar/")
                     zip (AdmZip. (str jar-path ".jar"))]
-                (if (.getEntry zip path)
+                (when (.getEntry zip path)
                   (.readAsText zip path)))
               (.existsSync fs filename)
               (node-read-file-sync filename))))))))
