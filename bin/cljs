@@ -1,87 +1,88 @@
 #!/usr/bin/env node
-var path = require('path');
-var fs   = require('fs');
-var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
-var readline = require('readline');
+const path = require('path')
+const fs = require('fs')
+const lib = path.join(path.dirname(fs.realpathSync(__filename)), '../lib')
+const readline = require('readline')
 
-var args = process.argv.slice(2);
+const cljs = require(`#{lib}/clojurescript`)
+
+const args = process.argv.slice(2)
 if(args.length > 0) {
-  var cljs = require(lib + '/clojurescript');
-  var code = fs.readFileSync(args[0], "utf8");
-  cljs.eval(code);
-  
-} else {
-  process.stdout.write("cljs.user=> ");
+  const code = fs.readFileSync(args[0], 'utf8')
+  cljs.eval(code)
 
-  var cljs = require(lib + '/clojurescript');
+} else {
+  process.stdout.write('cljs.user=> ')
 
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
-  });
+  })
 
-  var input = "";
+  let input = ''
 
-  function prompt(p) {
-    var promptString = p || cljs.eval("(str *ns*)") + "=> ";
-    rl.setPrompt(promptString);
-    rl.prompt();
-  }
-
-  rl.on('line', (cmd) => {
-    input += cmd + "\n";
-    if(cmd.length > 0 && parenthesesAreBalanced(input)) {
-      try {
-        var x = cljs.eval(input);
-        input = "";
-        cljs.context.cljs.pprint.pprint(x);
-      } catch(e) {
-        console.error(e);
-      }
-      prompt();
-      
-    } else {
-      prompt("... ");
-    }
-  });
-
-  rl.on('close', () => {
-    process.exit(0);
-  });
-
-  prompt();
 
   // http://codereview.stackexchange.com/questions/45991/balanced-parentheses
-  function parenthesesAreBalanced(s)
-  {
-    var parentheses = "[]{}()",
-      stack = [], //Parentheses stack
-      i, //Index in the string
-      c; //Character in the string
+  const parenthesesAreBalanced = (s) => {
+    const parentheses = '[]{}()'
 
-    for (i = 0; c = s[i++];)
-    {
-      var bracePosition = parentheses.indexOf(c),
-        braceType;
+    //Parentheses stack
+    const stack = []
+
+     //Character in the string
+    let character = ''
+
+    for (let i = 0 character = s[i++]) {
+      const bracePosition = parentheses.indexOf(character)
+      let braceType = ''
+
       //~ is truthy for any number but -1
-      if (!~bracePosition)
-        continue;
+      if (!~bracePosition) {
+        continue
+      }
 
-      braceType = bracePosition % 2 ? 'closed' : 'open';
+      braceType = bracePosition % 2 ? 'closed' : 'open'
 
-      if (braceType === 'closed')
-      {
+      if (braceType === 'closed') {
         //If there is no open parenthese at all, return false OR
         //if the opening parenthese does not match ( they should be neighbours )
         if (!stack.length || parentheses.indexOf(stack.pop()) != bracePosition - 1)
-          return false;
-      }
-      else
-      {
-        stack.push(c);
+          return false
+      } else {
+        stack.push(character)
       }
     }
+
     //If anything is left on the stack <- not balanced
-    return !stack.length;
+    return !stack.length
   }
+
+  const prompt = (p) => {
+    const promptString = p || `#{cljs.eval('(str *ns*)')}=> `
+    rl.setPrompt(promptString)
+    rl.prompt()
+  }
+
+  rl.on('line', (cmd) => {
+    input = `#{input}#{cmd}\n`
+    if(cmd.length > 0 && parenthesesAreBalanced(input)) {
+      try {
+        const x = cljs.eval(input)
+        input = ''
+        cljs.context.cljs.pprint.pprint(x)
+      } catch(e) {
+        console.error(e)
+      }
+      prompt()
+
+    } else {
+      prompt('... ')
+    }
+  })
+
+  rl.on('close', () => {
+    process.exit(0)
+  })
+
+  prompt()
 }

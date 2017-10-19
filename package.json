@@ -14,7 +14,7 @@
   "version": "0.0.10",
   "license": "Eclipse",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=8.6.0"
   },
   "directories": {
     "lib": "./lib"
