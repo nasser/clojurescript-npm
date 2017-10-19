@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "adm-zip": "^0.4.7",
+    "chalk": "^2.2.0",
+    "node-watch": "^0.5.5",
     "yargs": "^9.0.1"
   }
 }

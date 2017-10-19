@@ -1,5 +1,8 @@
 #!/usr/bin/env node
+const watch = require('node-watch')
 const { realpathSync, readFileSync, writeFileSync } = require('fs')
+const chalk = require('chalk');
+const log = console.log
 
 const path = require('path')
 const lib = path.join(path.dirname(realpathSync(__filename)), '../lib')
@@ -9,15 +12,46 @@ const cljs = require(`${lib}/clojurescript`)
 
 const argv = require('yargs').argv // yar!
 
-const args = process.argv.slice(2)
+const args = process.argv.slice(2);
 
-if (argv.e) {
-  let code = readFileSync(argv.e, 'utf8')
-  cljs.eval(code)
-} else if (argv.c && argv.o) {
-  let code = readFileSync(argv.c, 'utf8')
+const compileFile = (src, target) => {
+  let code = readFileSync(src, 'utf8')
   const compiledCode = cljs.compile(code)
-  writeFileSync(argv.o, compiledCode)
+  writeFileSync(target, compiledCode)
+}
+
+const evalFile = (src) => {
+  let code = readFileSync(src, 'utf8')
+  cljs.eval(code)
+}
+
+// watchers
+if (argv.watch && argv.c && argv.o) {
+  //compile files once
+  const compileProcess = compileFile.bind(null, argv.c, argv.o)
+  compileProcess()
+
+  const watcher = watch(argv.c, { recursive: true });
+  return watcher.on('change', function(evt, name) {
+    log(chalk.green(`npm-cljs: file change detected @ ${name}.\n${chalk.blue(`recompiling to => ${argv.o}\n`)}`))
+    compileProcess()
+  });
+} else if (argv.watch && argv.e) {
+  const evalProcess = evalFile.bind(null, argv.e)
+  evalProcess()
+
+  const watcher = watch(argv.e, { recursive: true });
+  return watcher.on('change', function(evt, name) {
+    log(chalk.green(`npm-cljs: file change detected @ ${name}.\n${chalk.blue(`recompiling to => ${argv.e}\n`)}`))
+    evalProcess()
+  });
+}
+
+// single-use cases
+if (argv.e) {
+  evalFile(argv.e)
+} else if (argv.c && argv.o) {
+  compileFile(argv.c, argv.o)
   process.exit()
 } else {
   startREPL()
