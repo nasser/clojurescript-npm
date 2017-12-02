@@ -122,10 +122,10 @@ cljs.eval("(helpers/wrap -90 0 10)")
 ```
 
 ### Node Require
-`require`ing `"clojurescript/register"` will register the `.cljs` extension with Node's `require` function and allow you to `require` cljs files in node. The module will export the contents of the last namespace in the file.
+`require`ing `"clojurescript/lib/register"` will register the `.cljs` extension with Node's `require` function and allow you to `require` cljs files in node. The module will export the contents of the last namespace in the file.
 
 ```js
-require("clojurescript/register")
+require("clojurescript/lib/register")
 var helpers = require("helpers")
 helpers
 // { wrap: [Function: helpers$wrap] }
