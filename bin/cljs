@@ -1,87 +1,58 @@
 #!/usr/bin/env node
-var path = require('path');
-var fs   = require('fs');
-var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
-var readline = require('readline');
+const watch = require('node-watch')
+const { realpathSync, readFileSync, writeFileSync } = require('fs')
+const chalk = require('chalk');
+const log = console.log
 
-var args = process.argv.slice(2);
-if(args.length > 0) {
-  var cljs = require(lib + '/clojurescript');
-  var code = fs.readFileSync(args[0], "utf8");
-  cljs.eval(code);
-  
+const path = require('path')
+const lib = path.join(path.dirname(realpathSync(__filename)), '../lib')
+
+const { startREPL } = require(`${lib}/repl`)
+const cljs = require(`${lib}/clojurescript`)
+
+const argv = require('yargs').argv // yar!
+
+const args = process.argv.slice(2);
+
+const compileFile = (src, target) => {
+  let code = readFileSync(src, 'utf8')
+  const compiledCode = cljs.compile(code)
+  writeFileSync(target, compiledCode)
+}
+
+const evalFile = (src) => {
+  let code = readFileSync(src, 'utf8')
+  cljs.eval(code)
+}
+
+// watchers
+if (argv.watch && argv.c && argv.o) {
+  //compile files once
+  const compileProcess = compileFile.bind(null, argv.c, argv.o)
+  compileProcess()
+
+  const watcher = watch(argv.c, { recursive: true });
+  return watcher.on('change', function(evt, name) {
+    log(chalk.green(`npm-cljs: file change detected @ ${name}.\n${chalk.blue(`recompiling to => ${argv.o}\n`)}`))
+    compileProcess()
+  });
+} else if (argv.watch && argv.e) {
+  const evalProcess = evalFile.bind(null, argv.e)
+  evalProcess()
+
+  const watcher = watch(argv.e, { recursive: true });
+  return watcher.on('change', function(evt, name) {
+    log(chalk.green(`npm-cljs: file change detected @ ${name}.\n${chalk.blue(`recompiling to => ${argv.e}\n`)}`))
+    evalProcess()
+  });
+}
+
+// single-use cases
+if (argv.e) {
+  evalFile(argv.e)
+} else if (argv.c && argv.o) {
+  compileFile(argv.c, argv.o)
+  process.exit()
 } else {
-  process.stdout.write("cljs.user=> ");
-
-  var cljs = require(lib + '/clojurescript');
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  var input = "";
-
-  function prompt(p) {
-    var promptString = p || cljs.eval("(str *ns*)") + "=> ";
-    rl.setPrompt(promptString);
-    rl.prompt();
-  }
-
-  rl.on('line', (cmd) => {
-    input += cmd + "\n";
-    if(cmd.length > 0 && parenthesesAreBalanced(input)) {
-      try {
-        var x = cljs.eval(input);
-        input = "";
-        cljs.context.cljs.pprint.pprint(x);
-      } catch(e) {
-        console.error(e);
-      }
-      prompt();
-      
-    } else {
-      prompt("... ");
-    }
-  });
-
-  rl.on('close', () => {
-    process.exit(0);
-  });
-
-  prompt();
-
-  // http://codereview.stackexchange.com/questions/45991/balanced-parentheses
-  function parenthesesAreBalanced(s)
-  {
-    var parentheses = "[]{}()",
-      stack = [], //Parentheses stack
-      i, //Index in the string
-      c; //Character in the string
-
-    for (i = 0; c = s[i++];)
-    {
-      var bracePosition = parentheses.indexOf(c),
-        braceType;
-      //~ is truthy for any number but -1
-      if (!~bracePosition)
-        continue;
-
-      braceType = bracePosition % 2 ? 'closed' : 'open';
-
-      if (braceType === 'closed')
-      {
-        //If there is no open parenthese at all, return false OR
-        //if the opening parenthese does not match ( they should be neighbours )
-        if (!stack.length || parentheses.indexOf(stack.pop()) != bracePosition - 1)
-          return false;
-      }
-      else
-      {
-        stack.push(c);
-      }
-    }
-    //If anything is left on the stack <- not balanced
-    return !stack.length;
-  }
+  startREPL()
 }

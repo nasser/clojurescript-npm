@@ -1,13 +1,31 @@
-ClojureScript npm Package
+ClojureScript npm Package: FORKED EDITION
 =========================
 
+```
+npm install --save-dev @sgnl/npm-clojurescript
+# or
+npm install -g @sgnl/npm-clojurescript
+```
+
+# MY CHANGELOG/ADDED FEATURES (decending order)
+- 🎉 `cljs` binary now has added functionality!
+  - `cljs` by itself will launch repl
+  - `cljs -e file.cljs` will evalute file and output evaluated code to stdout
+  - `cljs -c file.js -o compiled.js` will compile clojurescript code to javascript and save to file
+  - 🤙 with the above mentioned: this package is now npm script friendly!
+- modularize bin code. introduces `yargs` for cli argument parsing
+- updated syntax and node version requirements (y tho? 🐸)
+
+# ORIGINAL DOCS
 Making the [ClojureScript language](https://github.com/clojure/clojurescript) usable from Node.js projects
 
 ```js
 var cljs = require("clojurescript")
 cljs.compile("(fn [a] (str \"Hello \" a))")
+
 // '(function (a){\nreturn [cljs.core.str("Hello "),cljs.core.str(a)].join(\'\');\n})'
 var f = cljs.eval("(fn [a] (str \"Hello \" a))")
+
 f("World")
 // 'Hello World'
 ```

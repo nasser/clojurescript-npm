@@ -1,6 +1,6 @@
 {
-  "name": "clojurescript",
-  "description": "The ClojureScript Programming Language, packaged for Node.js",
+  "name": "@sgnl/npm-clojurescript",
+  "description": "The ClojureScript Programming Language, packaged for use with NPM scripts and Node.js",
   "keywords": [
     "language",
     "clojurescript",
@@ -10,11 +10,11 @@
     "immutable",
     "compiler"
   ],
-  "author": "Ramsey Nasser",
-  "version": "0.0.10",
+  "author": "Ray Farias",
+  "version": "0.0.13",
   "license": "Eclipse",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=8.6.0"
   },
   "directories": {
     "lib": "./lib"
@@ -23,13 +23,15 @@
   "bin": {
     "cljs": "./bin/cljs"
   },
-  "homepage": "http://nasser.github.io/clojurescript-npm",
-  "bugs": "https://github.com/nasser/clojurescript-npm/issues",
+  "bugs": "https://github.com/sgnl/npm-clojurescript/issues",
   "repository": {
     "type": "git",
-    "url": "git://github.com/nasser/clojurescript-npm.git"
+    "url": "git://github.com/sgnl/npm-clojurescript.git"
   },
   "dependencies": {
-    "adm-zip": "^0.4.7"
+    "adm-zip": "^0.4.7",
+    "chalk": "^2.2.0",
+    "node-watch": "^0.5.5",
+    "yargs": "^9.0.1"
   }
 }
