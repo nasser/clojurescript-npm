@@ -17,6 +17,13 @@ Status
 
 Very early. Do not use for anything critical. Contributions welcome!
 
+The REPL
+--------
+
+You can try the REPL "without" install using `npx`
+
+    npx -p clojurescript cljs
+
 Installation
 ------------
 
